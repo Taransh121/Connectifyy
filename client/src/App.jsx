@@ -6,7 +6,7 @@ import { Register } from "./pages/Register";
 export default function App() {
   return (
     <div className="">
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true }}>
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />

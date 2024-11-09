@@ -63,6 +63,7 @@ export const Login = () => {
                                     value={email}
                                     onChange={handleEmailChange}
                                     required
+                                    autoComplete="username"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">This email will be displayed with your inquiry.</p>
                             </div>
@@ -79,6 +80,7 @@ export const Login = () => {
                                     value={password}
                                     onChange={handlePasswordChange}
                                     required
+                                    autoComplete="current-password"
                                 />
                             </div>
 
