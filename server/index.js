@@ -11,7 +11,8 @@ const path = require("path");
 
 
 //Configurations
-dotenv.config();
+// dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });  // Adjust the path based on your structure
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
@@ -21,14 +22,14 @@ const dirname = path.resolve();
 
 //Database
 mongoose.set('strictQuery', false);
-// const mongoURL = `mongodb+srv://Taransh:${process.env.MONGODB_PASSWORD}@cluster0.eq8d4zf.mongodb.net/Loginn?retryWrites=true&w=majority`;
-// const mongoURL = `mongodb+srv://admin:${process.env.MONGODB_PASSWORD}@cluster0.1vnhs.mongodb.net/Project?retryWrites=true&w=majority&appName=Cluster0`
-// mongoose.connect(mongoURL)
-//     .then(() => {
-//         console.log("Database connected");
-//     }).catch((error) => {
-//         console.log(error);
-//     });
+
+const mongoURL = `mongodb+srv://admin:${process.env.MONGO_DB_PASSWORD}@cluster0.1vudx.mongodb.net/Project?retryWrites=true&w=majority&appName=Cluster0`
+mongoose.connect(mongoURL)
+    .then(() => {
+        console.log("Database connected");
+    }).catch((error) => {
+        console.log(error);
+    });
 
 //Routes
 app.use("/user", authRoutes);
