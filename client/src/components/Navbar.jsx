@@ -1,66 +1,65 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../Redux/userSlice';
+import { Link } from 'react-router-dom';
+import { clearChats } from '../Redux/chatSlice';
 
 export const Navbar = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
+    const { isLoggedIn, userInfo } = useSelector((state) => state.user); // Access user state
+    const dispatch = useDispatch(); // To dispatch actions
 
-    // Function to handle logout
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
-    };
-
-    // Function to determine the text in the navbar based on the current route
-    const getNavbarText = () => {
-        if (location.pathname === '/login') {
-            return 'Connecting People With Technology';
-        } else if (location.pathname === '/register') {
-            return '';
-        } else {
-            return '';
-        }
-    };
-
-    // Function to determine whether to show the logout button
-    const showLogoutButton = () => {
-        return location.pathname !== '/login' && location.pathname !== '/register';
+        dispatch(logout()); // Dispatch the logout action
+        dispatch(clearChats());
+        localStorage.removeItem("token");
     };
 
     return (
         <nav className="bg-gray-900 shadow-lg">
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="flex justify-between h-16 items-center">
-                    {/* Logo */}
-                    <div className="flex-shrink-0 flex items-center">
-                        <Link to="/" className="text-white text-2xl font-bold">
-                            Levitation
-                        </Link>
-                    </div>
+            <div className="max-w-7xl mx-auto px-4 flex justify-between h-16 items-center">
+                {/* Logo on the left */}
+                <div>
+                    <Link to="/" className="text-white text-2xl font-bold">
+                        Connectify
+                    </Link>
+                </div>
 
-                    {/* Conditional Text */}
-                    <div className="text-white text-lg">
-                        {getNavbarText()}
-                    </div>
+                {/* Centered links */}
+                <div className="flex items-center gap-4">
+                    {isLoggedIn && (
+                        <>
+                            <Link to="/chats" className="text-white hover:underline">Chats</Link>
+                            <a
+                                href="https://www.tutorialspoint.com/whiteboard.htm"
+                                className="text-white hover:underline"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                Whiteboard
+                            </a>
+                        </>
+                    )}
+                </div>
 
-                    {/* Logout button only visible if not on login or register */}
-                    {showLogoutButton() && (
+                {/* Logout button on the right */}
+                {isLoggedIn && (
+                    <div>
+                        <span className="text-white"> [ {userInfo?.name} ] </span>
                         <button
                             onClick={handleLogout}
                             className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700"
                         >
                             Logout
                         </button>
-                    )}
+                    </div>
+                )}
 
-                    {/* Redirect to login if on register page */}
-                    {location.pathname === '/register' && (
-                        <Link to="/login" className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">
-                            Login
-                        </Link>
-                    )}
-                </div>
+                {/* Login button on the right if not logged in */}
+                {!isLoggedIn && (
+                    <Link to="/login" className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">
+                        Login
+                    </Link>
+                )}
             </div>
         </nav>
     );

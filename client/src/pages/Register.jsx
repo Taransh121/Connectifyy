@@ -5,12 +5,17 @@ import loginImg from "../assets/login.png";
 import { Navbar } from '../components/Navbar';
 
 export const Register = () => {
+    // State for input fields
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    // State to store user details after successful registration
+    const [userDetails, setUserDetails] = useState(null);
+
     const navigate = useNavigate();
 
+    // Handlers for input changes
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
@@ -21,12 +26,17 @@ export const Register = () => {
         setPassword(e.target.value);
     };
 
+    // Submit handler
     const signupbtn = async (e) => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:8080/user/register', { name, email, password });
             localStorage.setItem("token", response.data.token);
-            navigate("/addProducts");
+
+            // Storing registered user details in state
+            setUserDetails({ name, email });
+
+            navigate("/");
         } catch (error) {
             alert("Error occurred while creating your account, sorry! You may have to restart your server.");
         }
@@ -35,8 +45,8 @@ export const Register = () => {
     return (
         <>
             <Navbar />
-            <div className="min-h-screen flex items-center justify-center bg-gray-900">
-                <div className="flex flex-col md:flex-row w-full max-w-4xl bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div className="m-4 flex items-center justify-center">
+                <div className="border border-green-100 flex flex-col md:flex-row w-full max-w-4xl bg-gray-800 rounded-lg shadow-lg overflow-hidden">
 
                     <div className="hidden md:flex w-1/2">
                         <img src={loginImg} alt="Office View" className="object-cover w-full h-full" />
@@ -45,7 +55,7 @@ export const Register = () => {
                     <div className="flex flex-col justify-center w-full md:w-1/2 p-8">
                         <div className="text-left">
                             <h2 className="text-3xl font-semibold text-white mb-2">Sign up to begin journey</h2>
-                            <p className="text-sm text-gray-400 mb-6">This is a basic signup page used for levitation assignment purposes.</p>
+                            <p className="text-sm text-gray-400 mb-6"> It’s gonna be awesome! Let's get started!.</p>
                         </div>
 
                         <form onSubmit={signupbtn} className="space-y-6">
@@ -109,6 +119,15 @@ export const Register = () => {
                                 </Link>
                             </div>
                         </form>
+
+                        {/* Display user details after registration */}
+                        {userDetails && (
+                            <div className="mt-6 bg-gray-700 p-4 rounded-md text-white">
+                                <h3 className="font-semibold">Registration Successful!</h3>
+                                <p><strong>Name:</strong> {userDetails.name}</p>
+                                <p><strong>Email:</strong> {userDetails.email}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

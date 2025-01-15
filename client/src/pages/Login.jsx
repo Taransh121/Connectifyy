@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import loginImg from "../assets/login.png";
 import { Navbar } from '../components/Navbar';
+import { login } from '../Redux/userSlice'; // Import Redux login action
+import { setChats } from '../Redux/chatSlice'; // Import Redux chat action
 
 export const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const dispatch = useDispatch(); // Access Redux dispatch function
 
     const handleEmailChange = (e) => {
         setEmail(e.target.value);
@@ -20,9 +24,33 @@ export const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            // Step 1: Login request
             const response = await axios.post('http://localhost:8080/user/login', { email, password });
+
+            // Save token in localStorage
             localStorage.setItem('token', response.data.token);
-            navigate('/addProducts');
+
+            // Step 2: Fetch user-specific chat data
+            const chatResponse = await axios.get('http://localhost:8080/chat/allChats', {
+                headers: {
+                    Authorization: `Bearer ${response.data.token}`, // Pass token to authenticate
+                },
+            });
+            console.log(chatResponse);
+
+
+            // Step 3: Save user and chat data in Redux store
+            dispatch(login({
+                name: response.data.user.name,
+                email: response.data.user.email,
+                token: response.data.token,
+            }));
+
+            // Store chats in Redux
+            dispatch(setChats(chatResponse.data));
+
+            // Navigate to home page
+            navigate('/');
         } catch (error) {
             alert('Invalid credentials');
         }
@@ -31,27 +59,19 @@ export const Login = () => {
     return (
         <>
             <Navbar />
-            {/* Main container to cover full screen */}
-            <div className="min-h-screen flex items-center justify-center bg-gray-900">
-                {/* Inner container with flex for form and image */}
-                <div className="flex flex-col md:flex-row w-full max-w-4xl bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-
-                    {/* Left Side (Image) */}
+            <div className="m-5 flex items-center justify-center">
+                <div className="border border-green-100 flex flex-col md:flex-row w-full max-w-4xl bg-gray-800 rounded-lg shadow-lg overflow-hidden">
                     <div className="hidden md:flex w-1/2">
                         <img src={loginImg} alt="Office View" className="object-cover w-full h-full" />
                     </div>
 
-                    {/* Right Side (Form) */}
                     <div className="flex flex-col justify-center w-full md:w-1/2 p-8">
-                        {/* Header and description */}
                         <div className="text-left">
                             <h2 className="text-3xl font-semibold text-white mb-2">Let the Journey Begin!</h2>
-                            <p className="text-sm text-gray-400 mb-6">This is a basic login page which is used for levitation assignment purposes.</p>
+                            <p className="text-sm text-gray-400 mb-6">Ready to rock and roll? Let's go!</p>
                         </div>
 
-                        {/* Login Form */}
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Email Field */}
                             <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-400">Email Address</label>
                                 <input
@@ -68,7 +88,6 @@ export const Login = () => {
                                 <p className="text-xs text-gray-500 mt-1">This email will be displayed with your inquiry.</p>
                             </div>
 
-                            {/* Password Field */}
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-400">Current Password</label>
                                 <input
@@ -84,7 +103,6 @@ export const Login = () => {
                                 />
                             </div>
 
-                            {/* Login Button */}
                             <div className="flex items-center justify-between">
                                 <button
                                     type="submit"
@@ -94,7 +112,6 @@ export const Login = () => {
                                 </button>
                             </div>
 
-                            {/* Registration Link */}
                             <div className="flex justify-end mt-2">
                                 <Link to='/register' className='text-sm text-blue-500 hover:text-blue-600'>
                                     Don't have an account? Register here
