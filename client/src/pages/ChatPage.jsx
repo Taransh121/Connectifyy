@@ -340,9 +340,9 @@ export const ChatPage = () => {
     return (
         <>
             <Navbar />
-            <div className="flex bg-gray-900 text-white">
+            <div className="flex flex-col md:flex-row bg-gray-900 text-white">
                 {/* Sidebar */}
-                <div className="w-1/4 bg-gray-800 p-4">
+                <div className="w-full md:w-1/4 bg-gray-800 p-4">
                     <h2 className="text-2xl font-bold border-b pb-2">Chats</h2>
                     {/* User Search */}
                     <div className="mt-4">
@@ -377,6 +377,7 @@ export const ChatPage = () => {
                             )}
                         </div>
                     )}
+
                     {/* Chat List */}
                     <div className="mt-4 space-y-2">
                         <h3 className="text-lg font-semibold mb-2">Recent Chats :</h3>
@@ -503,7 +504,6 @@ export const ChatPage = () => {
                         )}
                     </div>
 
-
                     {/* Add User Modal */}
                     {addingUserToGroup && (
                         <div className="absolute bg-gray-700 p-4 rounded-lg w-96">
@@ -531,9 +531,6 @@ export const ChatPage = () => {
                     )}
                 </div>
 
-
-
-                {/* Chat Content */}
                 {/* Chat Content */}
                 <div className="flex-1 h-[calc(100vh-4rem)] flex flex-col p-6 overflow-hidden">
                     {!activeChat ? (
@@ -623,8 +620,8 @@ export const ChatPage = () => {
                         </div>
                     )}
                 </div>
-
             </div>
+
         </>
     );
 };
