@@ -13,6 +13,11 @@ const messageSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Chat"
     },
+    file: {
+        url: { type: String },
+        type: { type: String },
+        name: { type: String }
+    },
     readBy: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"

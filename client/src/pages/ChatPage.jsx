@@ -21,6 +21,7 @@ export const ChatPage = () => {
     const [newMessage, setNewMessage] = useState("");
     const [addingUserToGroup, setAddingUserToGroup] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
     const socketRef = useRef(null);
     const messageEndRef = useRef(null);
 
@@ -170,36 +171,61 @@ export const ChatPage = () => {
         fetchMessages();
     }, [activeChat, userInfo.token, dispatch]);
 
+    //handle file upload to send as a message
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Process the file (e.g., upload to server or include in message)
+            console.log("Selected file:", file);
+            setSelectedFile(file); // Save the file to state
+        }
+    };
     // Handle sending messages
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !activeChat) return;
 
-        const messageData = {
-            content: newMessage,
-            chatId: activeChat._id,
-        };
+        // Ensure there is a message or a file to send, and an active chat
+        if ((!newMessage.trim() && !selectedFile) || !activeChat) return;
 
-        setNewMessage(""); // Clear input immediately for better UX
+        // Create FormData for sending both text and file
+        const formData = new FormData();
+        formData.append("chatId", activeChat._id);
+        if (newMessage.trim()) {
+            formData.append("content", newMessage);
+        }
+        if (selectedFile) {
+            formData.append("file", selectedFile);
+        }
+
+        setNewMessage(""); // Clear input for better UX
+        setSelectedFile(null); // Reset file input
 
         try {
             const { data } = await axios.post(
                 "http://localhost:8080/message",
-                messageData,
+                formData,
                 { headers: { Authorization: `Bearer ${userInfo.token}` } }
             );
 
             console.log("Sending new message:", data);
+
+            // Emit the new message via socket
             socketRef.current?.emit("new message", {
                 ...data,
                 chat: activeChat
             });
+
+            // Dispatch the new message to the store
             dispatch(addMessage(data));
         } catch (error) {
             console.error("Error sending message:", error);
-            setNewMessage(messageData.content); // Restore message if failed
+
+            // Restore message input and selected file if sending fails
+            if (newMessage.trim()) setNewMessage(newMessage.trim());
+            if (selectedFile) setSelectedFile(selectedFile);
         }
     };
+
 
     // Search users based on input
     const handleSearchUsers = debounce(async () => {
@@ -532,19 +558,21 @@ export const ChatPage = () => {
                 </div>
 
                 {/* Chat Content */}
-                <div className="flex-1 h-[calc(100vh-4rem)] flex flex-col p-6 overflow-hidden">
+                <div className="flex-1 h-[calc(100vh-4rem)] flex flex-col p-4 md:p-6 overflow-hidden bg-gray-900 text-white">
                     {!activeChat ? (
                         <div className="flex flex-col items-center justify-center h-full">
-                            <h2 className="text-3xl font-bold mb-4">Select a chat to start messaging</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-center">
+                                Select a chat to start messaging
+                            </h2>
                         </div>
                     ) : (
                         <div className="h-full flex flex-col">
-                            <h2 className="text-xl font-bold mb-4 text-green-500">
-                                {activeChat.isGroupChat
-                                    ? (
+                            <div className="mb-4">
+                                <h2 className="text-lg md:text-xl font-bold text-green-400">
+                                    {activeChat.isGroupChat ? (
                                         <>
-                                            <span>Group Name : {activeChat.chatName}</span>
-                                            <div className="text-sm text-gray-500">
+                                            <span>Group Name: {activeChat.chatName}</span>
+                                            <div className="text-sm text-gray-400 mt-1">
                                                 <span>Participants: </span>
                                                 {activeChat.users.map((user, index) => (
                                                     <span key={user._id}>
@@ -554,12 +582,14 @@ export const ChatPage = () => {
                                                 ))}
                                             </div>
                                         </>
-                                    )
-                                    : activeChat.users && activeChat.users.find(user => user.name !== userInfo.name)?.name
-                                }
-                            </h2>
+                                    ) : (
+                                        activeChat.users &&
+                                        activeChat.users.find(user => user.name !== userInfo.name)?.name
+                                    )}
+                                </h2>
+                            </div>
 
-                            <div className="flex-1 overflow-y-auto mb-4">
+                            <div className="flex-1 overflow-y-auto mb-4 p-3 bg-gray-800 rounded-lg">
                                 <div className="space-y-4">
                                     {messages.map((message) => (
                                         <div
@@ -570,21 +600,44 @@ export const ChatPage = () => {
                                                 }`}
                                         >
                                             <div
-                                                className={`max-w-[70%] rounded-lg p-3 ${message.sender.name === userInfo._name
+                                                className={`max-w-[70%] rounded-lg p-3 ${message.sender.name === userInfo.name
                                                     ? "bg-gray-700"
                                                     : "bg-gray-700"
                                                     }`}
                                             >
                                                 {message.sender.name !== userInfo.name ? (
                                                     <p className="mb-1 text-black">
-                                                        <strong>
-                                                            {message.sender.name}
-                                                        </strong>
+                                                        <strong>{message.sender.name}</strong>
                                                     </p>
                                                 ) : (
                                                     <strong className="mb-1 text-black">Me</strong>
                                                 )}
-                                                <p>{message.content}</p>
+
+                                                {/* Render message content */}
+                                                {message.content && <p>{message.content}</p>}
+
+                                                {/* Render file if exists */}
+                                                {message.file && (
+                                                    <div className="mt-2">
+                                                        {message.file.type.startsWith("image/") ? (
+                                                            <img
+                                                                src={`http://localhost:8080${message.file.url}`}
+                                                                alt={message.file.name}
+                                                                className="rounded-lg max-w-[200px] max-h-[200px] object-cover"
+                                                            />
+                                                        ) : (
+                                                            <a
+                                                                href={`http://localhost:8080${message.file.url}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-500 underline"
+                                                            >
+                                                                {message.file.name}
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                )}
+
                                             </div>
                                         </div>
                                     ))}
@@ -593,33 +646,43 @@ export const ChatPage = () => {
                                     )}
                                     <div ref={messageEndRef} />
                                 </div>
+
                             </div>
 
                             <form
                                 onSubmit={handleSendMessage}
-                                className="mt-auto"
+                                className="mt-auto flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-2"
                             >
-                                <div className="flex space-x-2">
+                                <input
+                                    type="text"
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyDown={handleTyping}
+                                    onKeyUp={handleStopTyping}
+                                    placeholder="Type a message"
+                                    className="flex-1 p-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                                />
+                                <label className="flex items-center space-x-2 cursor-pointer">
                                     <input
-                                        type="text"
-                                        value={newMessage}
-                                        onChange={(e) => setNewMessage(e.target.value)}
-                                        onKeyDown={handleTyping}
-                                        onKeyUp={handleStopTyping}
-                                        placeholder="Type a message"
-                                        className="flex-1 p-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        type="file"
+                                        onChange={handleFileUpload}
+                                        className="hidden"
                                     />
-                                    <button
-                                        type="submit"
-                                        className="px-6 py-3 bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors"
-                                    >
-                                        Send
-                                    </button>
-                                </div>
+                                    <span className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-sm md:text-base">
+                                        Attach
+                                    </span>
+                                </label>
+                                <button
+                                    type="submit"
+                                    className="px-4 md:px-6 py-2 md:py-3 bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors text-sm md:text-base"
+                                >
+                                    Send
+                                </button>
                             </form>
                         </div>
                     )}
                 </div>
+
             </div>
 
         </>

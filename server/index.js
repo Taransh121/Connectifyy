@@ -19,6 +19,8 @@ const chatRoutes = require("./Routes/chatRoute");
 const msgRoutes = require("./Routes/messageRoute");
 
 // Configurations
+// Make uploads folder accessible
+app.use('/uploads', express.static('uploads'));
 dotenv.config({ path: path.resolve(__dirname, '../.env') }); // Adjust the path based on your structure
 app.use(express.json());
 app.use(cors());

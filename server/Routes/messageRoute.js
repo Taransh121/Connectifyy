@@ -5,9 +5,10 @@ const {
     allMessages,
     sendMessage,
 } = require("../Controllers/messageController");
+const upload = require('../Middleware/upload');
 
 
 router.get("/:chatId", protect, allMessages);
-router.post("/", protect, sendMessage);
+router.post("/", protect, upload.single('file'), sendMessage);
 
 module.exports = router;
