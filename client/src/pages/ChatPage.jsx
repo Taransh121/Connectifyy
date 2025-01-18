@@ -16,11 +16,14 @@ export const ChatPage = () => {
     const [groupSearchQuery, setGroupSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]); // Array of search results
     const [groupSearchResults, setGroupSearchResults] = useState([]);
+    const [groupSearchQuery2, setGroupSearchQuery2] = useState("");
+    const [groupSearchResults2, setGroupSearchResults2] = useState([]);
     const [socketConnected, setSocketConnected] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const [newMessage, setNewMessage] = useState("");
     const [addingUserToGroup, setAddingUserToGroup] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState(null);
+    const [selectedGroup2, setSelectedGroup2] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
     const socketRef = useRef(null);
     const messageEndRef = useRef(null);
@@ -248,6 +251,32 @@ export const ChatPage = () => {
         return () => handleSearchUsers.cancel();
     }, [searchQuery]);
 
+    // Search groups based on input
+    const handleSearchGroups = debounce(async () => {
+        if (!groupSearchQuery2.trim()) return;
+
+        try {
+            const { data } = await axios.get(
+                `http://localhost:8080/user/groups?search=${groupSearchQuery2}`,
+                { headers: { Authorization: `Bearer ${userInfo.token}` } }
+            );
+            setGroupSearchResults2(data);
+        } catch (error) {
+            console.error("Error searching groups:", error);
+            alert(`Error searching groups: ${error.message}`);
+        }
+    }, 500);
+
+    useEffect(() => {
+        handleSearchGroups();
+        return () => handleSearchGroups.cancel();
+    }, [groupSearchQuery2]);
+
+    const handleSelectGroup = (group) => {
+        setSelectedGroup2(group);
+    };
+
+
     // Typing indicators
     const handleTyping = () => {
         if (!socketConnected || !activeChat) return;
@@ -403,6 +432,72 @@ export const ChatPage = () => {
                             )}
                         </div>
                     )}
+
+                    {/* Group Search */}
+                    <div className="mt-6">
+                        <input
+                            type="text"
+                            className="w-full p-2 rounded bg-gray-700 text-white"
+                            placeholder="Search groups..."
+                            value={groupSearchQuery2}
+                            onChange={(e) => setGroupSearchQuery2(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Group Search Results */}
+                    {groupSearchQuery2 && (
+                        <div className="mt-2">
+                            <h3 className="font-bold text-lg">Group Search Results:</h3>
+                            {groupSearchResults2.length ? (
+                                <ul>
+                                    {groupSearchResults2.map((group) => (
+                                        <li
+                                            key={group._id}
+                                            className="flex items-center justify-between p-2 bg-gray-700 rounded mt-2 cursor-pointer hover:bg-gray-600"
+                                            onClick={() => handleSelectGroup(group)}
+                                        >
+                                            <span>{group.chatName}</span>
+                                            <span className="text-gray-400 text-sm">
+                                                {group.users.length} members
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500 mt-2">No groups found</p>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Selected Group Details */}
+                    {selectedGroup2 && (
+                        <div className="mt-4">
+                            <h3 className="font-bold text-lg text-green-500">
+                                Group: {selectedGroup2.chatName}
+                            </h3>
+                            <p className="text-gray-400">Members:</p>
+                            <ul className="mt-2">
+                                {selectedGroup2.users.map((user) => (
+                                    <li
+                                        key={user._id}
+                                        className="flex items-center p-2 bg-gray-700 rounded mt-1 text-white"
+                                    >
+                                        <span>{user.name}</span>
+                                        <span className="ml-auto text-gray-400 text-sm">
+                                            {user.email}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <button
+                                onClick={() => setSelectedGroup2(null)}
+                                className="mt-4 px-4 py-2 bg-red-600 rounded-lg text-white hover:bg-red-500"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    )}
+
 
                     {/* Chat List */}
                     <div className="mt-4 space-y-2">

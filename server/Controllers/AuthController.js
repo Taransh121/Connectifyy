@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../Models/UserModel");
+const Chat = require("../Models/ChatModel");
+
 
 exports.register = async (req, res) => {
     try {
@@ -70,3 +72,18 @@ exports.allusers = async (req, res) => {
 
     }
 }
+exports.allGroups = async (req, res) => {
+    try {
+        const keyword = req.query.search
+            ? { chatName: { $regex: req.query.search, $options: "i" } }
+            : {};
+
+        const groups = await Chat.find({ isGroupChat: true, ...keyword })
+            .populate("users", "name email")
+            .populate("groupAdmin", "name email");
+
+        res.status(200).json(groups);
+    } catch (error) {
+        return res.status(400).json({ message: "Error fetching groups", error });
+    }
+};
