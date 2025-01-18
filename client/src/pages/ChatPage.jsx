@@ -313,6 +313,27 @@ export const ChatPage = () => {
             alert(`Error renaming group: ${error.message}`);
         }
     };
+
+    //Handle delete chat-
+    const handleDeleteChat = async (chatId) => {
+        if (!window.confirm("Are you sure you want to delete this chat?")) return;
+
+        try {
+            const { data } = await axios.delete(
+                `http://localhost:8080/chat/deleteChat/${chatId}`,
+                { headers: { Authorization: `Bearer ${userInfo.token}` } }
+            );
+
+            // Update the chat list after successful deletion
+            setChats((prevChats) => prevChats.filter((chat) => chat._id !== chatId));
+
+            alert("Chat deleted successfully!");
+        } catch (error) {
+            console.error("Error deleting chat:", error);
+            alert("Failed to delete chat. Please try again.");
+        }
+    };
+
     //handle start chat
     const handleStartChat = async (user) => {
         try {
@@ -526,21 +547,29 @@ export const ChatPage = () => {
                                                 setSelectedGroup(chat);
                                                 setAddingUserToGroup(true);
                                             }}
-                                            className="ml-2 text-sm text-blue-400 hover:underline"
+                                            className="ml-2 text-sm text-blue-400 hover:text-red-500"
                                         >
                                             | Add User |
                                         </button>
                                         <button
                                             onClick={() => handleRenameGroup(chat)}
-                                            className="ml-2 text-sm text-blue-400 hover:underline"
+                                            className="ml-2 text-sm text-blue-400 hover:text-red-500 "
                                         >
                                             Rename |
                                         </button>
                                     </>
                                 )}
+                                {/* Delete Icon */}
+                                <button
+                                    onClick={() => handleDeleteChat(chat._id)}
+                                    className="ml-2 text-red-500 hover:text-red-700 hover:text-blue-500"
+                                >
+                                    🗑️
+                                </button>
                             </div>
                         ))}
                     </div>
+
 
                     {/* Create New Group */}
                     <div className="mt-4">

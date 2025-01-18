@@ -52,6 +52,27 @@ exports.fetchChats = async (req, res) => {
         res.status(400).send(error.message);
     }
 }
+exports.deleteChat = async (req, res) => {
+    const { chatId } = req.params;
+
+    if (!chatId) {
+        return res.status(400).send("Chat ID is required");
+    }
+
+    try {
+        // Find and delete the chat
+        const deletedChat = await Chat.findByIdAndDelete(chatId);
+
+        if (!deletedChat) {
+            return res.status(404).send("Chat not found");
+        }
+
+        res.status(200).send({ message: "Chat deleted successfully", deletedChat });
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+};
+
 exports.createGroupChat = async (req, res) => {
     const { chatName, users } = req.body;
 
