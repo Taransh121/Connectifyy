@@ -396,6 +396,11 @@ export const ChatPage = () => {
                 updatedChats.push(data);
             }
             alert("User added to group.")
+            // Update activeChat to reflect the new user list
+            if (activeChat && activeChat._id === data._id) {
+                console.log(data);
+                dispatch(setActiveChat(data));
+            }
             // Dispatch the updated chats array to Redux store
             dispatch(setChats(updatedChats));
 
@@ -406,6 +411,11 @@ export const ChatPage = () => {
             console.error("Error adding user to group:", error);
         }
     };
+    useEffect(() => {
+        if (activeChat && activeChat.users) {
+            console.log("Updated participants:", activeChat.users);
+        }
+    }, [activeChat]);
     //Generate meeting link
     const meetLinks = [
         "https://meet.google.com/wwg-sghe-rzm",
@@ -712,9 +722,6 @@ export const ChatPage = () => {
                         ))}
                     </div>
 
-
-
-
                     {/* Add User Modal */}
                     {addingUserToGroup && (
                         <div className="absolute bg-gray-700 p-4 rounded-lg w-96">
@@ -759,12 +766,13 @@ export const ChatPage = () => {
                                             <span>Group Name: {activeChat.chatName}</span>
                                             <div className="text-sm text-gray-400 mt-1">
                                                 <span>Participants: </span>
-                                                {activeChat.users.map((user, index) => (
-                                                    <span key={user._id}>
-                                                        {user.name}
-                                                        {index < activeChat.users.length - 1 && ", "}
-                                                    </span>
-                                                ))}
+                                                {activeChat.users &&
+                                                    activeChat.users.map((user, index) => (
+                                                        <span key={user._id}>
+                                                            {user.name}
+                                                            {index < activeChat.users.length - 1 && ", "}
+                                                        </span>
+                                                    ))}
                                             </div>
                                         </>
                                     ) : (
