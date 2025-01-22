@@ -12,6 +12,7 @@ export const ChatPage = () => {
     const dispatch = useDispatch();
     const { chats, activeChat, messages } = useSelector((state) => state.chat);
     const { userInfo } = useSelector((state) => state.user);
+    const [meetingNotification, setMeetingNotification] = useState("");
     const [searchQuery, setSearchQuery] = useState(""); // Input value for search
     const [groupSearchQuery, setGroupSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]); // Array of search results
@@ -405,6 +406,48 @@ export const ChatPage = () => {
             console.error("Error adding user to group:", error);
         }
     };
+    //Generate meeting link
+    const meetLinks = [
+        "https://meet.google.com/wwg-sghe-rzm",
+        "https://meet.google.com/onx-awit-rgk",
+        "https://meet.google.com/aoo-qfcv-fmg",
+        "https://meet.google.com/crg-oeyv-eow",
+        "https://meet.google.com/ttq-frko-bbq",
+        "https://meet.google.com/fid-mzvi-gxk",
+        "https://meet.google.com/vsp-aqud-vjt",
+        "https://meet.google.com/xrj-athw-jaq",
+        "https://meet.google.com/opa-bzfy-tcn",
+        "https://meet.google.com/mwu-munb-bne",
+        "https://meet.google.com/jho-ypey-pfm",
+        "https://meet.google.com/mqv-gphu-pru",
+        "https://meet.google.com/uvr-qccs-jxx",
+        "https://meet.google.com/zdi-yfyz-uic",
+        "https://meet.google.com/vrg-tbrd-gfm",
+        "https://meet.google.com/baq-uagu-oxh",
+        "https://meet.google.com/ioh-rdvx-cjx",
+        "https://meet.google.com/ged-mixg-kga"
+    ];
+
+    let currentIndex = 0;
+
+    const handleMeetingCreation = () => {
+        if (currentIndex >= meetLinks.length) {
+            currentIndex = 0; // Reset to start once all links are used
+        }
+
+        const linkToCopy = meetLinks[currentIndex];
+        navigator.clipboard.writeText(linkToCopy)
+            .then(() => {
+                setMeetingNotification(`Meeting link copied to clipboard: ${linkToCopy}`);
+                setTimeout(() => setMeetingNotification(""), 3000); // Clear message after 3 seconds
+            })
+            .catch(err => {
+                setMeetingNotification("Error copying link. Please try again.");
+                console.error("Error copying link: ", err);
+            });
+
+        currentIndex++;
+    };
 
 
 
@@ -519,57 +562,21 @@ export const ChatPage = () => {
                         </div>
                     )}
 
+                    <div className="mt-4">
+                        <button
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded"
+                            onClick={handleMeetingCreation}
+                        >
+                            Create New Meeting
+                        </button>
 
-                    {/* Chat List */}
-                    <div className="mt-4 space-y-2">
-                        <h3 className="text-lg font-semibold mb-2">Recent Chats :</h3>
-                        {chats.map((chat) => (
-                            <div
-                                key={chat._id}
-                                className={`w-full p-3 flex items-center justify-between cursor-pointer ${activeChat?._id === chat._id
-                                    ? "border-b"
-                                    : "border-b hover:bg-gray-600"
-                                    }`}
-                            >
-                                <div
-                                    onClick={() => dispatch(setActiveChat(chat))}
-                                    className="flex-1"
-                                >
-                                    {chat.isGroupChat
-                                        ? `${chat.chatName} - (Group)`
-                                        : chat.users && chat.users.find(user => user.name !== userInfo.name)?.name + " - (Private)"
-                                    }
-                                </div>
-                                {chat.isGroupChat && (
-                                    <>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedGroup(chat);
-                                                setAddingUserToGroup(true);
-                                            }}
-                                            className="ml-2 text-sm text-blue-400 hover:text-red-500"
-                                        >
-                                            | Add User |
-                                        </button>
-                                        <button
-                                            onClick={() => handleRenameGroup(chat)}
-                                            className="ml-2 text-sm text-blue-400 hover:text-red-500 "
-                                        >
-                                            Rename |
-                                        </button>
-                                    </>
-                                )}
-                                {/* Delete Icon */}
-                                <button
-                                    onClick={() => handleDeleteChat(chat._id)}
-                                    className="ml-2 text-red-500 hover:text-red-700 hover:text-blue-500"
-                                >
-                                    🗑️
-                                </button>
+                        {/* Notification message */}
+                        {meetingNotification && (
+                            <div className="mt-2 p-2 bg-green-100 text-green-800 rounded">
+                                {meetingNotification}
                             </div>
-                        ))}
+                        )}
                     </div>
-
 
                     {/* Create New Group */}
                     <div className="mt-4">
@@ -653,6 +660,60 @@ export const ChatPage = () => {
                             </div>
                         )}
                     </div>
+
+
+                    {/* Chat List */}
+                    <div className="mt-4 space-y-2">
+                        <h3 className="text-lg font-semibold mb-2">Recent Chats :</h3>
+                        {chats.map((chat) => (
+                            <div
+                                key={chat._id}
+                                className={`w-full p-3 flex items-center justify-between cursor-pointer ${activeChat?._id === chat._id
+                                    ? "border-b"
+                                    : "border-b hover:bg-gray-600"
+                                    }`}
+                            >
+                                <div
+                                    onClick={() => dispatch(setActiveChat(chat))}
+                                    className="flex-1"
+                                >
+                                    {chat.isGroupChat
+                                        ? `${chat.chatName} - (Group)`
+                                        : chat.users && chat.users.find(user => user.name !== userInfo.name)?.name + " - (Private)"
+                                    }
+                                </div>
+                                {chat.isGroupChat && (
+                                    <>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedGroup(chat);
+                                                setAddingUserToGroup(true);
+                                            }}
+                                            className="ml-2 text-sm text-blue-400 hover:text-red-500"
+                                        >
+                                            | Add User |
+                                        </button>
+                                        <button
+                                            onClick={() => handleRenameGroup(chat)}
+                                            className="ml-2 text-sm text-blue-400 hover:text-red-500 "
+                                        >
+                                            Rename |
+                                        </button>
+                                    </>
+                                )}
+                                {/* Delete Icon */}
+                                <button
+                                    onClick={() => handleDeleteChat(chat._id)}
+                                    className="ml-2 text-red-500 hover:text-red-700 hover:text-blue-500"
+                                >
+                                    🗑️
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+
+
 
                     {/* Add User Modal */}
                     {addingUserToGroup && (
