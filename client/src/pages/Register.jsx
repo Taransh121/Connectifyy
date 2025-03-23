@@ -38,7 +38,8 @@ export const Register = () => {
 
             navigate("/");
         } catch (error) {
-            alert("Error occurred while creating your account, sorry! You may have to restart your server.");
+            console.log(error.response.data.msg);
+            alert(`Error: ${error.response.data.msg}`);
         }
     };
 
