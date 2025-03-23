@@ -6,6 +6,8 @@ import { Register } from "./pages/Register";
 import { Home } from './pages/Home';
 import { ChatPage } from './pages/ChatPage';
 import io from "socket.io-client";
+import { ForgetPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -43,6 +45,10 @@ export default function App() {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgetPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+
         </Routes>
       </BrowserRouter>
     </div>

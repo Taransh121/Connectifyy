@@ -85,11 +85,10 @@ export const Login = () => {
                                     required
                                     autoComplete="username"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">This email will be displayed with your inquiry.</p>
                             </div>
 
                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-400">Current Password</label>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-400">Password</label>
                                 <input
                                     type="password"
                                     id="password"
@@ -103,6 +102,7 @@ export const Login = () => {
                                 />
                             </div>
 
+
                             <div className="flex items-center justify-between">
                                 <button
                                     type="submit"
@@ -110,6 +110,12 @@ export const Login = () => {
                                 >
                                     Login now
                                 </button>
+                            </div>
+                            {/* Forgot Password Link */}
+                            <div className="flex justify-end">
+                                <Link to='/forgot-password' className='text-sm text-blue-500 hover:text-blue-600'>
+                                    Forgot Password?
+                                </Link>
                             </div>
 
                             <div className="flex justify-end mt-2">
